@@ -10,7 +10,7 @@ const screenShot = () => {
 }
 
 window.electron.completed((event, arg) => {
-  console.log(arg)
+  alert('完了しました')
 })
 window.electron.stopped((event, arg) => {
   progress(arg.i + 1)

@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer')
 const moment = require('moment')
 const makeDir = require('make-dir')
 const sharp = require('sharp')
+const fs = require('fs')
 
 let mainWindow = null;
 app.on('ready', () => {
@@ -73,6 +74,8 @@ app.on('ready', () => {
         console.log(e)
       }
     }
+    const fileText = results.map((result) => { return (result.success ? 'success:' : 'fail:') + result.url }).join('\n')
+    fs.writeFileSync(filePath2 + '/result.txt', fileText)
     mainWindow.webContents.send('completed', results)
   })
 });

@@ -1,5 +1,5 @@
 node_modules/
-dist/
+dist**/*.*
 results/
 results2/
 tmp/

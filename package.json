@@ -5,18 +5,39 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "build:portable": "electron-builder --win --x64 --dir",
+    "build": "electron-builder --win --x64"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
-  "devDependencies": {
-    "electron": "^15.3.0",
-    "electron-builder": "^22.13.1",
+  "dependencies": {
+    "fs": "0.0.1-security",
     "fs-extra": "^10.0.0",
     "make-dir": "^3.1.0",
     "moment": "^2.29.1",
     "puppeteer": "^10.4.0",
     "sharp": "^0.29.2"
+  },
+  "devDependencies": {
+    "electron": "^15.3.0",
+    "electron-builder": "~22.10.5"
+  },
+  "build": {
+    "appId": "ScreenShots",
+    "productName": "ScreenShots",
+    "files": [
+      "index.html",
+      "index.css",
+      "index.js",
+      "main.js",
+      "preload.js",
+      "node_modules/"
+    ],
+    "directories": {
+      "output": "dist_installer"
+    },
+    "asar": true,
+    "asarUnpack": "node_modules/puppeteer/.local-chromium/**/*"
   }
 }

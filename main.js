@@ -1,11 +1,11 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path')
-const puppeteer = require('puppeteer')
 const moment = require('moment')
 const makeDir = require('make-dir')
 const sharp = require('sharp')
 const fs = require('fs')
 const fsExtra = require('fs-extra')
+const puppeteer = require('puppeteer')
 
 let mainWindow = null;
 app.on('ready', () => {
@@ -41,9 +41,12 @@ app.on('ready', () => {
     const imageWidth = Number(arg.imageWidth)
     const results = []
     let url, i, browser, page, filename, tmpFilename, fullFilename
+    function getChromiumExecPath() {
+      return puppeteer.executablePath().replace('app.asar', 'app.asar.unpacked');
+    }
     for (i = 0; i < urls.length; i++) {
       try {
-        browser = await puppeteer.launch({ headless: true })
+        browser = await puppeteer.launch({ headless: true, executablePath: getChromiumExecPath() })
         page = await browser.newPage()
         await page.setViewport({ width: screenWidth, height })
         url = urls[i]

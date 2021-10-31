@@ -2,3 +2,4 @@ node_modules/
 dist/
 results/
 results2/
+tmp/

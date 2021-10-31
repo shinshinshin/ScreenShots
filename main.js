@@ -5,6 +5,7 @@ const moment = require('moment')
 const makeDir = require('make-dir')
 const sharp = require('sharp')
 const fs = require('fs')
+const fsExtra = require('fs-extra')
 
 let mainWindow = null;
 app.on('ready', () => {
@@ -29,17 +30,17 @@ app.on('ready', () => {
 
   ipcMain.on('get_screen', async (event, arg) => {
     const dirname = moment().format('YYYY_MM_DD_HH_mm_ss')
+    const tmpPath = 'tmp/'
+    await makeDir(tmpPath)
     const filePath = 'results/' + dirname
     await makeDir(filePath)
-    const filePath2 = 'results2/' + dirname
-    await makeDir(filePath2)
     const urls = arg.urls
     const screenWidth = Number(arg.screenWidth)
     const height = Number(arg.screenHeight)
     const fullPage = arg.fullPage
     const imageWidth = Number(arg.imageWidth)
     const results = []
-    let url, i, browser, page, filename, fullFilename, fullFilename2
+    let url, i, browser, page, filename, tmpFilename, fullFilename
     for (i = 0; i < urls.length; i++) {
       try {
         browser = await puppeteer.launch({ headless: true })
@@ -48,12 +49,12 @@ app.on('ready', () => {
         url = urls[i]
         await page.goto(url, { waitUntil: 'networkidle0' })
         filename = url.replaceAll('\\', '_').replaceAll('/', '_').replaceAll(':', '_').replaceAll('*', '_').replaceAll('?', '_').replaceAll('"', '_').replaceAll('<', '_').replaceAll('>', '_').replaceAll('|', '_').replaceAll('.', '_')
+        tmpFilename = tmpPath + '/' + filename + '.png'
         fullFilename = filePath + '/' + filename + '.png'
-        fullFilename2 = filePath2 + '/' + filename + '.png'
-        await page.screenshot({ path: fullFilename, fullPage })
+        await page.screenshot({ path: tmpFilename, fullPage })
 
         mainWindow.webContents.send('progress', i + 1)
-        results.push({ index: i, url, success: true, file: fullFilename, file2: fullFilename2 })
+        results.push({ index: i, url, success: true, tmpFile: tmpFilename, outputFile: fullFilename })
       } catch (e) {
         mainWindow.webContents.send('stopped', { url, i })
         results.push({ index: i, url, success: false })
@@ -67,15 +68,16 @@ app.on('ready', () => {
       try {
         result = results[i]
         if (result.success) {
-          image = await sharp(result.file).resize(imageWidth)
-          await image.toFile(result.file2)
+          image = await sharp(result.tmpFile).resize(imageWidth)
+          await image.toFile(result.outputFile)
         }
       } catch (e) {
         console.log(e)
       }
     }
     const fileText = results.map((result) => { return (result.success ? 'success:' : 'fail:') + result.url }).join('\n')
-    fs.writeFileSync(filePath2 + '/result.txt', fileText)
+    fs.writeFileSync(filePath + '/result.txt', fileText)
+    fsExtra.remove(tmpPath)
     mainWindow.webContents.send('completed', results)
   })
 });

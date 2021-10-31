@@ -1,15 +1,16 @@
 let urls
 const screenShot = () => {
-  const screenWidth = document.getElementById('screen_width').value
-  const screenHeight = document.getElementById('screen_height').value
+  const screenWidth = document.getElementById('screen_width').value || '680'
+  const screenHeight = document.getElementById('screen_height').value || '500'
   urls = document.getElementById('urls').value.split('\n').filter(url => { return url.trim() !== '' })
   const fullPage = document.getElementById('full_page').checked
-  window.electron.screenShot({ screenWidth, screenHeight, urls, fullPage })
+  const imageWidth = document.getElementById('image_width').value || '680'
+  window.electron.screenShot({ screenWidth, screenHeight, urls, fullPage, imageWidth })
   progress(0)
 }
 
 window.electron.completed((event, arg) => {
-  alert('completed' + arg)
+  console.log(arg)
 })
 window.electron.stopped((event, arg) => {
   progress(arg.i + 1)

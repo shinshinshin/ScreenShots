@@ -3,6 +3,7 @@ const path = require('path')
 const puppeteer = require('puppeteer')
 const moment = require('moment')
 const makeDir = require('make-dir')
+const sharp = require('sharp')
 
 let mainWindow = null;
 app.on('ready', () => {
@@ -27,28 +28,51 @@ app.on('ready', () => {
 
   ipcMain.on('get_screen', async (event, arg) => {
     const dirname = moment().format('YYYY_MM_DD_HH_mm_ss')
-    await makeDir('results/' + dirname)
+    const filePath = 'results/' + dirname
+    await makeDir(filePath)
+    const filePath2 = 'results2/' + dirname
+    await makeDir(filePath2)
     const urls = arg.urls
-    const width = Number.isFinite(arg.width) ? Number(arg.width) : 680
-    const height = Number.isFinite(arg.height) ? Number(arg.height) : 500
+    const screenWidth = Number(arg.screenWidth)
+    const height = Number(arg.screenHeight)
     const fullPage = arg.fullPage
-    let url, i, browser, page, filename
+    const imageWidth = Number(arg.imageWidth)
+    const results = []
+    let url, i, browser, page, filename, fullFilename, fullFilename2
     for (i = 0; i < urls.length; i++) {
       try {
         browser = await puppeteer.launch({ headless: true })
         page = await browser.newPage()
-        await page.setViewport({ width, height })
+        await page.setViewport({ width: screenWidth, height })
         url = urls[i]
         await page.goto(url, { waitUntil: 'networkidle0' })
-        filename = url.replaceAll('\\', '￥').replaceAll('/', '／').replaceAll(':', '：').replaceAll('*', '＊').replaceAll('?', '？').replaceAll('"', '”').replaceAll('<', '＜').replaceAll('>', '＞').replaceAll('|', '｜')
-        await page.screenshot({ path: 'results/' + dirname + '/' + filename + '.png', fullPage })
+        filename = url.replaceAll('\\', '_').replaceAll('/', '_').replaceAll(':', '_').replaceAll('*', '_').replaceAll('?', '_').replaceAll('"', '_').replaceAll('<', '_').replaceAll('>', '_').replaceAll('|', '_').replaceAll('.', '_')
+        fullFilename = filePath + '/' + filename + '.png'
+        fullFilename2 = filePath2 + '/' + filename + '.png'
+        await page.screenshot({ path: fullFilename, fullPage })
+
         mainWindow.webContents.send('progress', i + 1)
+        results.push({ index: i, url, success: true, file: fullFilename, file2: fullFilename2 })
       } catch (e) {
         mainWindow.webContents.send('stopped', { url, i })
+        results.push({ index: i, url, success: false })
       } finally {
         browser.close()
       }
     }
-    mainWindow.webContents.send('completed', arg.screenWidth)
+
+    let result, image
+    for (i = 0; i < results.length; i++) {
+      try {
+        result = results[i]
+        if (result.success) {
+          image = await sharp(result.file).resize(imageWidth)
+          await image.toFile(result.file2)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    mainWindow.webContents.send('completed', results)
   })
 });

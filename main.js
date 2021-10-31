@@ -8,7 +8,7 @@ let mainWindow = null;
 app.on('ready', () => {
   // mainWindowを作成（windowの大きさや、Kioskモードにするかどうかなどもここで定義できる）
   mainWindow = new BrowserWindow({
-    width: 450, height: 400, webPreferences: {
+    width: 450, height: 500, webPreferences: {
       nodeIntegration: false,
       preload: path.join(app.getAppPath(), 'preload.js'),
       contextIsolation: true
@@ -27,23 +27,28 @@ app.on('ready', () => {
 
   ipcMain.on('get_screen', async (event, arg) => {
     const dirname = moment().format('YYYY_MM_DD_HH_mm_ss')
-    const urls = arg.urls.split('\n')
-    await urls.forEach(async url => {
+    await makeDir('results/' + dirname)
+    const urls = arg.urls
+    const width = Number.isFinite(arg.width) ? Number(arg.width) : 680
+    const height = Number.isFinite(arg.height) ? Number(arg.height) : 500
+    const fullPage = arg.fullPage
+    let url, i, browser, page, filename
+    for (i = 0; i < urls.length; i++) {
       try {
-        const browser = await puppeteer.launch({ headless: true })
-        const page = await browser.newPage()
-        const width = Number.isFinite(arg.width) ? Number(arg.width) : 680
-        await page.setViewport({ width, height: 500 })
+        browser = await puppeteer.launch({ headless: true })
+        page = await browser.newPage()
+        await page.setViewport({ width, height })
+        url = urls[i]
         await page.goto(url, { waitUntil: 'networkidle0' })
-        const filename = url.replaceAll('\\', '￥').replaceAll('/', '／').replaceAll(':', '：').replaceAll('*', '＊').replaceAll('?', '？').replaceAll('"', '”').replaceAll('<', '＜').replaceAll('>', '＞').replaceAll('|', '｜')
-        await makeDir('results/' + dirname)
-        await page.screenshot({ path: 'results/' + dirname + '/' + filename + '.png', fullPage: true })
+        filename = url.replaceAll('\\', '￥').replaceAll('/', '／').replaceAll(':', '：').replaceAll('*', '＊').replaceAll('?', '？').replaceAll('"', '”').replaceAll('<', '＜').replaceAll('>', '＞').replaceAll('|', '｜')
+        await page.screenshot({ path: 'results/' + dirname + '/' + filename + '.png', fullPage })
+        mainWindow.webContents.send('progress', i + 1)
       } catch (e) {
-        throw (e)
+        mainWindow.webContents.send('stopped', { url, i })
       } finally {
         browser.close()
       }
-    });
+    }
     mainWindow.webContents.send('completed', arg.screenWidth)
   })
 });

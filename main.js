@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path')
 const moment = require('moment')
 const makeDir = require('make-dir')
@@ -11,7 +11,7 @@ let mainWindow = null;
 app.on('ready', () => {
   // mainWindowを作成（windowの大きさや、Kioskモードにするかどうかなどもここで定義できる）
   mainWindow = new BrowserWindow({
-    width: 450, height: 500, webPreferences: {
+    width: 450, height: 550, webPreferences: {
       nodeIntegration: false,
       preload: path.join(app.getAppPath(), 'preload.js'),
       contextIsolation: true
@@ -22,17 +22,28 @@ app.on('ready', () => {
   mainWindow.loadURL('file://' + __dirname + '/index.html');
 
   // ChromiumのDevツールを開く
-  //  mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   mainWindow.on('closed', function () {
     mainWindow = null;
   });
 
+  ipcMain.handle('open-dialog', async () => {
+    const dirpath = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory']
+    }).then((result) => {
+      if (result.canceled) return
+      return result.filePaths[0]
+    }).catch((err) => console.log(err))
+    if (!dirpath) return ''
+    return dirpath
+  })
+
   ipcMain.on('get_screen', async (event, arg) => {
     const dirname = moment().format('YYYY_MM_DD_HH_mm_ss')
     const tmpPath = 'tmp/'
     await makeDir(tmpPath)
-    const filePath = 'results/' + dirname
+    const filePath = arg.outputPath + '/' + dirname
     await makeDir(filePath)
     const urls = arg.urls
     const screenWidth = Number(arg.screenWidth)
@@ -78,7 +89,10 @@ app.on('ready', () => {
         console.log(e)
       }
     }
-    const fileText = results.map((result) => { return (result.success ? 'success:' : 'fail:') + result.url }).join('\n')
+
+    const successUrls = results.filter((result) => result.success).map((result) => result.url).join('\n')
+    const failUrls = results.filter((result) => !result.success).map((result) => result.url).join('\n')
+    const fileText = '成功\n' + successUrls + '\n\n失敗\n' + failUrls
     fs.writeFileSync(filePath + '/result.txt', fileText)
     fsExtra.remove(tmpPath)
     mainWindow.webContents.send('completed', results)

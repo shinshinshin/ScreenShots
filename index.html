@@ -8,14 +8,34 @@
 </head>
 
 <body>
-  <div>ブラウザ幅</div><input type="text" name="screen_width" id="screen_width" size="6" maxlength="4">
-  <div>ブラウザ高さ</div><input type="text" name="screen_height" id="screen_height" size="6" maxlength="4">
-  <div>全ページ</div><input type="checkbox" name="full_page" id="full_page">
-  <div>画像幅</div><input type="text" name="image_width" id="image_width" size="6" maxlength="4">
-  <div>url</div><textarea name="urls" id="urls" cols="50" rows="10"></textarea>
-  <input type="button" value="スクリーンショット撮影" onclick="screenShot()">
-  <div>進捗</div>
-  <div id="progress"></div>
+  <div class="container">
+    <div class="row">
+      <div class="label">ブラウザ幅</div>
+      <input type="text" name="screen_width" id="screen_width" size="6" maxlength="4" class="textbox">
+    </div>
+    <div class="row">
+      <div class="label">ブラウザ高さ</div>
+      <input type="text" name="screen_height" id="screen_height" size="6" maxlength="4" class="textbox">
+    </div>
+    <div class="row">
+      <div class="label">全ページ</div>
+      <input type="checkbox" name="full_page" id="full_page" class="checkbox">
+    </div>
+    <div class="row">
+      <div class="label">画像幅</div>
+      <input type="text" name="image_width" id="image_width" size="6" maxlength="4" class="textbox">
+    </div>
+    <div class="row">
+      <input type="button" name="select_dir_btn" id="select_dir_btn" value="保存フォルダ" onclick="selectDir()">
+      <textarea type="" name="output_path" id="output_path" size="20" rows="2" disabled="disabled"></textarea>
+    </div>
+    <div class="url_label">url</div><textarea name="urls" id="urls" cols="50" rows="10"></textarea>
+    <input type="button" value="スクリーンショット撮影" id="exe_btn" onclick="screenShot()">
+    <div class="row">
+      <div class="label">進捗</div>
+      <div id="progress" class="right_div"></div>
+    </div>
+  </div>
   <script src="index.js"></script>
 </body>
 

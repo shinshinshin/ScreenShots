@@ -35,7 +35,7 @@
       "node_modules/"
     ],
     "directories": {
-      "output": "dist_installer"
+      "output": "dist_portable"
     },
     "asar": true,
     "asarUnpack": "node_modules/puppeteer/.local-chromium/**/*"

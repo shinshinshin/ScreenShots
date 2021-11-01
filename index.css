@@ -1,0 +1,57 @@
+.container{
+  display:flex;
+  flex-direction: column;
+}
+
+.row{
+  display:flex;
+  flex-direction: row;
+  margin:5px
+}
+
+.label{
+  width:120px;
+  margin:5px;
+}
+
+.right_div{
+  width:120px;
+  margin:5px;
+}
+
+.textbox{
+  margin-top:5px;
+  height: 20px;
+}
+
+#output_path{
+  margin-top:5px;
+  height:40px;
+}
+
+.checkbox{
+  width: 15px;
+  height: 15px;
+  margin-top:10px;
+  margin-left:-1px;
+}
+
+.url_label{
+  margin-top:10px;
+}
+
+#select_dir_btn{
+  height:25px;
+  margin-top:5px;
+}
+
+#output_path{
+  margin-left:35px;
+  width:300px;
+}
+
+#exe_btn{
+  margin-top:15px;
+  width: 200px;
+  height:25px;
+}

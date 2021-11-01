@@ -22,7 +22,7 @@ app.on('ready', () => {
   mainWindow.loadURL('file://' + __dirname + '/index.html');
 
   // ChromiumのDevツールを開く
-  mainWindow.webContents.openDevTools();
+  //  mainWindow.webContents.openDevTools();
 
   mainWindow.on('closed', function () {
     mainWindow = null;

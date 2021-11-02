@@ -30,7 +30,6 @@ module.exports.getScreenShots = async (arg, mainWindow, filePath) => {
         flgs.push(res.status() < 300 && res.status() >= 200)
       })
       await page.goto(url, { waitUntil: 'networkidle0' })
-      console.log(flgs)
       const success = flgs.filter(flg => flg).length * 2 >= flgs.length
       if (success) {
         filename = convertUrl(url)

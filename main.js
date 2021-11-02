@@ -26,7 +26,11 @@ app.on('ready', () => {
   });
 
   // 設定を送る
-  mainWindow.webContents.send('settings', getSettingFile())
+  ipcMain.handle('require-settings', () => {
+    const settings = getSettingFile()
+    console.log(settings)
+    mainWindow.webContents.send('send-settings', settings)
+  })
 
   // フォルダ選択ダイアログ
   ipcMain.handle('open-dialog', async () => {

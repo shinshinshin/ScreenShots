@@ -28,12 +28,13 @@ module.exports.getSettingFile = () => {
   }
   return settings
 }
-module.exports.getFolder = async () => {
+module.exports.getFolder = async (mainWindow) => {
   const folderPath = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory']
   }).then((result) => {
-    if (result.canceled) return
+    if (result.canceled) return ''
     return result.filePaths[0]
   }).catch((err) => console.log(err))
   if (!folderPath) return ''
+  return folderPath
 }

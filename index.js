@@ -1,8 +1,8 @@
 const selectDir = async () => {
   const outputPath = document.getElementById('output_path')
   const dir = await electron.openDialog()
-  if (!dir) outputPath.value = ''
-  outputPath.value = dir
+  if (!dir) outputPath.innerHTML = ''
+  outputPath.innerHTML = dir
 }
 
 let urls
@@ -15,6 +15,7 @@ const screenShot = () => {
   const outputPath = document.getElementById('output_path').value || 'results'
   window.electron.screenShot({ screenWidth, screenHeight, urls, fullPage, imageWidth, outputPath })
   progress(0)
+  document.getElementById('exe_btn').disabled = true
 }
 
 window.electron.getSettings((event, arg) => {
@@ -26,7 +27,8 @@ window.electron.getSettings((event, arg) => {
   document.getElementById('urls').innerHTML = arg.urls.join('\n')
 })
 window.electron.completed((event, arg) => {
-  alert('完了しました')
+  //  alert('完了しました')
+  document.getElementById('exe_btn').disabled = false
 })
 window.electron.stopped((event, arg) => {
   progress(arg.i + 1)

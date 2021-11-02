@@ -28,7 +28,6 @@ app.on('ready', () => {
   // 設定を送る
   ipcMain.handle('require-settings', () => {
     const settings = getSettingFile()
-    console.log(settings)
     mainWindow.webContents.send('send-settings', settings)
   })
 

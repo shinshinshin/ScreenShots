@@ -25,15 +25,27 @@ module.exports.getScreenShots = async (arg, mainWindow, filePath) => {
       page = await browser.newPage()
       await page.setViewport({ width: screenWidth, height })
       url = urls[i]
+      let flgs = []
+      await page.on('response', async res => {
+        flgs.push(res.status() < 300 && res.status() >= 200)
+      })
       await page.goto(url, { waitUntil: 'networkidle0' })
-      filename = convertUrl(url)
-      tmpFilename = tmpPath + '/' + filename + '.png'
-      fullFilename = filePath + '/' + filename + '.png'
-      await page.screenshot({ path: tmpFilename, fullPage })
+      console.log(flgs)
+      const success = flgs.filter(flg => flg).length * 2 >= flgs.length
+      if (success) {
+        filename = convertUrl(url)
+        tmpFilename = tmpPath + '/' + filename + '.png'
+        fullFilename = filePath + '/' + filename + '.png'
+        await page.screenshot({ path: tmpFilename, fullPage })
 
-      mainWindow.webContents.send('progress', i + 1)
-      results.push({ index: i, url, success: true, tmpFile: tmpFilename, outputFile: fullFilename })
+        mainWindow.webContents.send('progress', i + 1)
+        results.push({ index: i, url, success: true, tmpFile: tmpFilename, outputFile: fullFilename })
+      } else {
+        mainWindow.webContents.send('stopped', { url, i })
+        results.push({ index: i, url, success: false })
+      }
     } catch (e) {
+      console.log(e)
       mainWindow.webContents.send('stopped', { url, i })
       results.push({ index: i, url, success: false })
     } finally {

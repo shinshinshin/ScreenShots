@@ -31,7 +31,7 @@ window.electron.completed((event, arg) => {
 })
 window.electron.stopped((event, arg) => {
   progress(arg.i + 1)
-  //alert(arg.url + 'でエラー')
+  //  alert(arg.url + 'でエラー')
 })
 window.electron.progress((event, arg) => {
   progress(arg)

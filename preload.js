@@ -9,6 +9,5 @@ contextBridge.exposeInMainWorld(
     getSettings: (arg) => { ipcRenderer.on('send-settings', arg) },
     screenShot: (arg) => ipcRenderer.send('get_screen', arg),
     openDialog: async () => await ipcRenderer.invoke('open-dialog'),
-    requireSettings: () => ipcRenderer.invoke('require-settings')
   }
 )

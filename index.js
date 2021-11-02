@@ -17,7 +17,6 @@ const screenShot = () => {
   progress(0)
 }
 
-electron.requireSettings()
 window.electron.getSettings((event, arg) => {
   document.getElementById('screen_width').value = arg.screenWidth
   document.getElementById('screen_height').value = arg.screenHeight

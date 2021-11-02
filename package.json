@@ -32,6 +32,8 @@
       "index.js",
       "main.js",
       "preload.js",
+      "utils.js",
+      "getScreenShots.js",
       "node_modules/"
     ],
     "directories": {

@@ -17,6 +17,15 @@ const screenShot = () => {
   progress(0)
 }
 
+window.electron.settings((event, arg) => {
+  console.log(arg)
+  document.getElementById('screen_width').value = arg.screenWidth
+  document.getElementById('screen_height').value = arg.screenHeight
+  document.getElementById('full_page').value = arg.fullPage
+  document.getElementById('image_height').value = arg.imageHeight
+  document.getElementById('output_path').value = arg.outputPath
+  document.getElementById('urls').value = arg.urls.join('\n')
+})
 window.electron.completed((event, arg) => {
   alert('完了しました')
 })

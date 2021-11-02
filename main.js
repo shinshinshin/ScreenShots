@@ -1,11 +1,8 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path')
 const moment = require('moment')
-const makeDir = require('make-dir')
-const sharp = require('sharp')
-const fs = require('fs')
-const fsExtra = require('fs-extra')
-const puppeteer = require('puppeteer')
+const { outputResultTxt, getSettingFile, getFolder } = require('./utils')
+const { getScreenShots } = require('./getScreenShots')
 
 let mainWindow = null;
 app.on('ready', () => {
@@ -28,73 +25,21 @@ app.on('ready', () => {
     mainWindow = null;
   });
 
+  // 設定を送る
+  mainWindow.webContents.send('settings', getSettingFile())
+
+  // フォルダ選択ダイアログ
   ipcMain.handle('open-dialog', async () => {
-    const dirpath = await dialog.showOpenDialog(mainWindow, {
-      properties: ['openDirectory']
-    }).then((result) => {
-      if (result.canceled) return
-      return result.filePaths[0]
-    }).catch((err) => console.log(err))
-    if (!dirpath) return ''
-    return dirpath
+    const folder = await getFolder()
+    return folder
   })
 
+  //　スクリーンショット撮影
   ipcMain.on('get_screen', async (event, arg) => {
     const dirname = moment().format('YYYY_MM_DD_HH_mm_ss')
-    const tmpPath = 'tmp/'
-    await makeDir(tmpPath)
     const filePath = arg.outputPath + '/' + dirname
-    await makeDir(filePath)
-    const urls = arg.urls
-    const screenWidth = Number(arg.screenWidth)
-    const height = Number(arg.screenHeight)
-    const fullPage = arg.fullPage
-    const imageWidth = Number(arg.imageWidth)
-    const results = []
-    let url, i, browser, page, filename, tmpFilename, fullFilename
-    function getChromiumExecPath() {
-      return puppeteer.executablePath().replace('app.asar', 'app.asar.unpacked');
-    }
-    for (i = 0; i < urls.length; i++) {
-      try {
-        browser = await puppeteer.launch({ headless: true, executablePath: getChromiumExecPath() })
-        page = await browser.newPage()
-        await page.setViewport({ width: screenWidth, height })
-        url = urls[i]
-        await page.goto(url, { waitUntil: 'networkidle0' })
-        filename = url.replaceAll('\\', '_').replaceAll('/', '_').replaceAll(':', '_').replaceAll('*', '_').replaceAll('?', '_').replaceAll('"', '_').replaceAll('<', '_').replaceAll('>', '_').replaceAll('|', '_').replaceAll('.', '_')
-        tmpFilename = tmpPath + '/' + filename + '.png'
-        fullFilename = filePath + '/' + filename + '.png'
-        await page.screenshot({ path: tmpFilename, fullPage })
-
-        mainWindow.webContents.send('progress', i + 1)
-        results.push({ index: i, url, success: true, tmpFile: tmpFilename, outputFile: fullFilename })
-      } catch (e) {
-        mainWindow.webContents.send('stopped', { url, i })
-        results.push({ index: i, url, success: false })
-      } finally {
-        browser.close()
-      }
-    }
-
-    let result, image
-    for (i = 0; i < results.length; i++) {
-      try {
-        result = results[i]
-        if (result.success) {
-          image = await sharp(result.tmpFile).resize(imageWidth)
-          await image.toFile(result.outputFile)
-        }
-      } catch (e) {
-        console.log(e)
-      }
-    }
-
-    const successUrls = results.filter((result) => result.success).map((result) => result.url).join('\n')
-    const failUrls = results.filter((result) => !result.success).map((result) => result.url).join('\n')
-    const fileText = '成功\n' + successUrls + '\n\n失敗\n' + failUrls
-    fs.writeFileSync(filePath + '/result.txt', fileText)
-    fsExtra.remove(tmpPath)
+    const results = await getScreenShots(arg, mainWindow, filePath)
+    outputResultTxt(results, filePath)
     mainWindow.webContents.send('completed', results)
   })
-});
+})

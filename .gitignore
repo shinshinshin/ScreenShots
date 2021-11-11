@@ -3,3 +3,4 @@ dist**/*.*
 results/
 results2/
 tmp/
+settings.json
